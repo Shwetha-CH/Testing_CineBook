@@ -15,13 +15,17 @@ public class BookingPage extends BasePage {
     private final By error = id("booking-error");
     private final By total = id("booking-total");
     private final By seatCount = id("booking-seat-count");
-    private final By availableSeats = By
-            .cssSelector("[id^='seat-']:not(.disabled):not([disabled]), .seat-available:not([disabled])");
-    private final By shows = By.cssSelector("[id^='show-']:not([disabled])");
-    private final By seatsLoaded = By.cssSelector("[id^='seat-']");
 
-    // private final By seatsLeft = By.cssSelector("p[class='text-[0.65rem]
-    // font-semibold uppercase tracking-wider text-gray-500']");
+    private final By seatsLoaded = By.cssSelector("[id^='seat-']");
+    private final By allSeats = By.cssSelector("button[id^='seat-']");
+    private final By bookedSeats = By.cssSelector(
+            "[id^='seat-'].booked, [id^='seat-'].seat-booked, [id^='seat-'][data-booked='true'], [id^='seat-'][aria-disabled='true']"
+    );
+    private final By availableSeats = By.cssSelector(
+            "[id^='seat-']:not(.disabled):not([disabled]):not(.booked):not(.seat-booked), .seat-available:not([disabled])"
+    );
+    private final By shows = By.cssSelector("[id^='show-']:not([disabled])");
+
     public BookingPage(WebDriver driver) {
         super(driver);
     }
@@ -45,7 +49,6 @@ public class BookingPage extends BasePage {
         waitForBookingPage();
     }
 
-
     public boolean isDisplayed() {
         return isVisible(page);
     }
@@ -62,7 +65,7 @@ public class BookingPage extends BasePage {
     }
 
     public boolean selectFirstAvailableSeat() {
-        List<WebElement> seats = visibleElements(seatsLoaded).stream()
+        List<WebElement> seats = visibleElements(availableSeats).stream()
                 .filter(WebElement::isEnabled)
                 .toList();
         if (seats.isEmpty()) {
@@ -81,12 +84,7 @@ public class BookingPage extends BasePage {
     }
 
     public boolean waitForErrorOrStillOnBooking() {
-        // wait.until(ExpectedConditions.or(
-        // ExpectedConditions.visibilityOfElementLocated(error),
-        // ExpectedConditions.urlContains("/book")
-        // ));
         return currentUrl().contains("/book");
-
     }
 
     public boolean navigatedToPaymentOrSuccess() {
@@ -97,12 +95,10 @@ public class BookingPage extends BasePage {
         return true;
     }
 
-
     public String getSeatsLeft(String showId) {
         JavascriptExecutor js = (JavascriptExecutor) driver;
-
-        String script = "const el = document.querySelector('#" + showId + " p[class*=\\\"text-[0.65rem]\\\"]');" +
-                "return el ? el.innerText.trim() : '';";
+        String script = "const el = document.querySelector('#" + showId + " p[class*=\\\"text-[0.65rem]\\\"]');"
+                + "return el ? el.innerText.trim() : '';";
         return (String) js.executeScript(script);
     }
 
@@ -115,15 +111,51 @@ public class BookingPage extends BasePage {
     }
 
     public int findEnabledSeats() {
-        List<WebElement> seats = driver.findElements(By.cssSelector("button[id^='seat']"));
+        List<WebElement> seats = driver.findElements(allSeats);
         int enabledCount = 0;
 
         for (WebElement seat : seats) {
-            if (seat.isEnabled()) {
+            if (seat.isEnabled() && !isSeatMarkedDisabled(seat)) {
                 enabledCount++;
             }
         }
 
         return enabledCount;
+    }
+
+    public List<WebElement> getBookedSeats() {
+        return driver.findElements(bookedSeats);
+    }
+
+    public boolean areBookedSeatsDisabled() {
+        List<WebElement> seats = getBookedSeats();
+        if (seats.isEmpty()) {
+            return false;
+        }
+
+        for (WebElement seat : seats) {
+            if (!isSeatMarkedDisabled(seat) || seat.isEnabled()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public boolean isSeatUnselectable(WebElement seat) {
+        return isSeatMarkedDisabled(seat) || !seat.isEnabled();
+    }
+
+    private boolean isSeatMarkedDisabled(WebElement seat) {
+        String disabledAttr = seat.getAttribute("disabled");
+        String ariaDisabled = seat.getAttribute("aria-disabled");
+        String className = seat.getAttribute("class");
+
+        return disabledAttr != null
+                || "true".equalsIgnoreCase(ariaDisabled)
+                || (className != null && (
+                className.contains("disabled")
+                        || className.contains("booked")
+                        || className.contains("seat-booked")));
     }
 }
