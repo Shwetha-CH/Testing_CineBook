@@ -59,12 +59,17 @@ public class BookingTests extends BaseTest {
             "TC_CONCURRENT" }, description = "TC_CONCURRENT: Two users select the same seat on the same show")
     public void TC_CONCURRENT_onlyOneUserShouldBookSameSeat() throws InterruptedException {
 
+        // BaseTest.@BeforeMethod already opened 1 browser — close it first
+        // so we only have exactly 2 browsers (driver1 + driver2) open
+        DriverFactory.quitDriver();
+
         // ── Two separate browser windows ──────────────────────────────────────────
         DriverFactory.createDriver(null, false);
         WebDriver driver1 = DriverFactory.getDriver();
 
         DriverFactory.createDriver(null, false);
         WebDriver driver2 = DriverFactory.getDriver();
+
 
         try {
             // ── rahulkumar ────────────────────────────────────────────────────────

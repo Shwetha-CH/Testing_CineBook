@@ -107,11 +107,11 @@ public class BookingPage extends BasePage {
     }
 
     public void selectMovie(String id) {
-        click(By.id(id));
+        click(By.cssSelector("[id='" + id + "']"));
     }
 
     public void selectShow(String id) {
-        click(By.id(id));
+        click(By.cssSelector("[id='" + id + "']"));
     }
 
     public int findEnabledSeats() {
