@@ -24,9 +24,9 @@ public class BookingTests extends BaseTest {
         loginAsUser();
         Thread.sleep(3000);
         BookingPage bookingPage = new BookingPage(driver);
-        bookingPage.selectMovie(movieId);
+        bookingPage.openMoviesAndBook(movieId);       // navigates to /movies, clicks book, waits for /book
         Thread.sleep(3000);
-        bookingPage.selectShow(showId);
+        bookingPage.selectFirstShowIfPresent();
         Thread.sleep(3000);
         bookingPage.proceedToPay();
         Thread.sleep(3000);
@@ -43,9 +43,9 @@ public class BookingTests extends BaseTest {
         loginAsUser();
         Thread.sleep(3000);
         BookingPage bookingPage = new BookingPage(driver);
-        bookingPage.selectMovie(movieId);
+        bookingPage.openMoviesAndBook(movieId);       // navigates to /movies, clicks book, waits for /book
         Thread.sleep(3000);
-        bookingPage.selectShow(showId);
+        bookingPage.selectFirstShowIfPresent();
         Thread.sleep(3000);
         bookingPage.selectFirstAvailableSeat();
         Thread.sleep(3000);
@@ -91,7 +91,7 @@ public class BookingTests extends BaseTest {
                 Thread.sleep(3000);
 
                 BookingPage bp1 = new BookingPage(driver1);
-                bp1.selectMovie(movieId);
+                bp1.openMoviesAndBook(movieId);       // navigates to /movies → clicks book → waits for /book URL
                 Thread.sleep(3000);
 
                 // Dynamically pick the first available show — no hardcoded ID
@@ -144,7 +144,7 @@ public class BookingTests extends BaseTest {
                 Thread.sleep(3000);
 
                 BookingPage bp2 = new BookingPage(driver2);
-                bp2.selectMovie(movieId);
+                bp2.openMoviesAndBook(movieId);       // navigates to /movies → clicks book → waits for /book URL
                 Thread.sleep(3000);
 
                 // Dynamically pick the first available show — no hardcoded ID
